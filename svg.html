@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script type="text/javascript" src="d3/d3.v3.js"></script>
+
+    <title>d3 Examples</title>
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2">
+                <img src="resources/d3logo.png">
+            </div>
+            <div class="col-md-10">
+                <h1 class="logo">D3 Examples</h1>
+                <h4>Richard Dalton</h4>
+                <div class="btn-group btn-group-md" role="group" aria-label="...">
+                    <a href="index.html" class="btn btn-default" role="button">Home</a>
+                    <a href="svg.html" class="btn btn-default" role="button">SVG</a>
+                    <a href="barChart.html" class="btn btn-default" role="button">Bar</a>
+                    <a href="pieChart.html" class="btn btn-default" role="button">Pie</a>
+                    <a href="bubbleChart.html" class="btn btn-default" role="button">Bubble</a>
+                    <a href="force.html" class="btn btn-default" role="button">Force</a>
+                    <a href="globe.html" class="btn btn-default" role="button">Globe</a>
+                    <a href="https://d3js.org" class="btn btn-default" role="button">D3.js</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+<div class="container">
+    <h3>Scalable Vector Graphics</h3>
+    <p>Scalable Vector Graphics (SVG) can be rendered using markup similar to html.</p>
+    <p>This makes them ideal for rendering graphics based using D3. An SVG element is added to the document,
+    then the data is turned into image elements like circles, lines etc, with attributes like center position,
+    radius, fill color, and opacity.</p>
+
+    <div class="col-md-6">
+        <div id="draw_here"></div>
+        <div id="buttons_here"></div>
+    </div>
+
+    <div class="col-md-6">
+<pre>
+    var w = 500;
+    var h = 200;
+
+    data1 = [50, 60, 70, 30, 20, 10];
+    data2 = [30, 80, 20, 40];
+    dataIndex = 1;
+    
+    var colors = d3.scale.category10();
+
+    //Create SVG element
+    var svg = d3.select("#draw_here")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+    svg.selectAll("circle")
+            .data(data1)
+            .enter()
+            .append("circle")
+            .attr("cx", function (d, i) {
+                return 75 + (i * 80);
+            })
+            .attr("cy", h / 2)
+            .attr("r", function (d, i) {
+                return d;
+            })
+            .attr("fill", function(d, i) {
+                return colors(i);
+            })
+            .attr("opacity", "0.5");
+
+    d3.select("#buttons_here").append("button")
+            .text("change data")
+            .on("click",function(){
+                if (dataIndex==1) {
+                    dataIndex=2;  
+                } else   {
+                    dataIndex=1;
+                }
+                var circle = svg.selectAll("circle")
+                    .data(eval("data"+dataIndex));
+
+                circle.exit().remove();//remove unneeded circles
+                    circle.enter().append("circle")
+                        .attr("r",0);//create any new circles needed
+
+                circle.transition()
+                        .duration(500)
+                        .attr("cx", function (d, i) {
+                            return 75 + (i * 80);
+                        })
+                        .attr("cy", h / 2)
+                        .attr("r", function (d, i) {
+                            return d;
+                        })
+                        .attr("fill", function(d, i) {
+                            return colors(i);
+                        });
+
+            });//end click function
+</pre>
+    </div>
+</div>
+
+<script>
+
+    var w = 500;
+    var h = 200;
+
+    data1 = [[0, 50], [1, 60], [2, 70], [3, 30], [4, 20], [5, 10]];
+    data2 = [[0, 30], [1, 80], [2, 20], [3, 40]];
+    selectedData = data1;
+
+    var colors = d3.scale.category10();
+
+    //Create SVG element
+    var svg = d3.select("#draw_here")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+    draw_circles();
+
+    d3.select("#buttons_here").append("button")
+        .text("change data")
+        .on("click",function(){
+            if (selectedData==data1) {
+                selectedData=data2;  
+            } else   {
+                selectedData=data1;
+            }
+            draw_circles();
+        });//end click function
+
+
+    d3.select("#buttons_here").append("button")
+        .text("shuffle data")
+        .on("click",function(){
+            selectedData = shuffle(selectedData);
+            draw_circles();
+        });//end click function
+
+
+    function shuffle(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex;
+
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // And swap it with the current element.
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
+    }
+
+
+    function draw_circles() {
+        var circle = svg.selectAll("circle")
+                    .data(selectedData);
+
+                circle.exit().remove();//remove unneeded circles
+                circle.enter().append("circle")
+                    .attr("r",0);//create any new circles needed
+
+                circle.transition()
+                        .duration(500)
+                        .attr("cx", function (d, i) {
+                            return 75 + (i * 80);
+                        })
+                        .attr("cy", h / 2)
+                        .attr("r", function (d, i) {
+                            return d[1];
+                        })
+                        .attr("fill", function(d, i) {
+                            return colors(d[0]);
+                        })
+                        .attr("opacity", "0.5");
+;
+    }
+</script>
+
+</body>
+</html>
